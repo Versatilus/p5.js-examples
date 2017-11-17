@@ -1,15 +1,19 @@
+// jshint esversion: 6
+/* eslint-disable no-undef */
+
+
 var offscreenBuffer;
 var hypnotizers = [];
 
 const rotationPerFrame = (2 * Math.PI) / (60 * 3); //(full circle) / (frame rate * time)
 
 
-const canvasSize = [640, 360];
+const canvasSize = () => [windowWidth - 5, windowHeight - 5];
 
 function setup() {
-  let [xSize, ySize] = canvasSize; // destructured assignment https://hacks.mozilla.org/2015/05/es6-in-depth-destructuring/
+  let [xSize, ySize] = canvasSize(); // destructured assignment https://hacks.mozilla.org/2015/05/es6-in-depth-destructuring/
   createCanvas(xSize, ySize);
-  offscreenBuffer = createGraphics(xSize, ySize); // https://p5js.org/reference/#/p5/createGraphics
+  offscreenBuffer = createGraphics(xSize / 2, ySize / 2); // https://p5js.org/reference/#/p5/createGraphics
 
   // modes are set directly on the 'renderer' object/'drawing surface'
   offscreenBuffer.background(51);
@@ -60,7 +64,7 @@ class HypnoSquare {
   // all drawing is done with methods of our 'drawing surface'
   show() {
     offscreenBuffer.fill(
-      sin(frameCount * rotationPerFrame * 0.1 + this.size) ** 2, // ES7 adds exponentiation https://hacks.mozilla.org/2015/08/es6-in-depth-the-future/
+      sq(sin(frameCount * rotationPerFrame * 0.1 + this.size)),
       1,
       0.5,
       0.333);
@@ -92,4 +96,8 @@ class HypnoSquare {
     }
   }
 
+}
+
+function windowResized() {
+  resizeCanvas(...canvasSize());
 }
