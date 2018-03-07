@@ -2,6 +2,7 @@
 .idea/
 hidden/
 .hidden/
+node_modules/
 log.txt
 *.log
 *.*\#

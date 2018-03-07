@@ -1,12 +1,23 @@
-// jshint esversion: 6
-/* eslint-disable no-undef */
+/* globals
+  windowWidth, windowHeight,
+  createCanvas, resizeCanvas, createGraphics,
+  noCursor,
+  ellipseMode,
+  HSL, RADIUS, CENTER,
+  frameCount,
+  background, fill, stroke, ellipse, image
+  sq, abs, random, constrain, sin
+  createVector,
+  mouseX, mouseY,
+   */
 
+/* exported setup, draw, windowResized
+  animator, equilateral_triangle, cosineColors */
 
 var offscreenBuffer;
 var hypnotizers = [];
 
-const rotationPerFrame = (2 * Math.PI) / (60 * 3); //(full circle) / (frame rate * time)
-
+const rotationPerFrame = 2 * Math.PI / (60 * 3); //(full circle) / (frame rate * time)
 
 const canvasSize = () => [windowWidth - 5, windowHeight - 5];
 
@@ -29,10 +40,12 @@ function setup() {
   let totalSpinners = ~~random(10) + 1; // double bitwise NOT is faster than floor()
   for (let i = 0; i < totalSpinners; i++) {
     hypnotizers.push(
-      new HypnoSquare(
+      new HypnoSquare( // eslint-disable-line
         random(offscreenBuffer.width),
         random(offscreenBuffer.height),
-        random(13, 29)));
+        random(13, 29)
+      )
+    );
   }
 }
 
@@ -57,8 +70,10 @@ class HypnoSquare {
     this.position = createVector(sx, sy);
     this.size = size;
     this.topSpeed = size * 0.55;
-    this.velocity = createVector(random(-this.topSpeed, this.topSpeed),
-      random(-this.topSpeed, this.topSpeed));
+    this.velocity = createVector(
+      random(-this.topSpeed, this.topSpeed),
+      random(-this.topSpeed, this.topSpeed)
+    );
   }
 
   // all drawing is done with methods of our 'drawing surface'
@@ -67,12 +82,11 @@ class HypnoSquare {
       sq(sin(frameCount * rotationPerFrame * 0.1 + this.size)),
       1,
       0.5,
-      0.333);
+      0.333
+    );
 
     offscreenBuffer.push();
-    offscreenBuffer.translate(
-      this.position.x,
-      this.position.y);
+    offscreenBuffer.translate(this.position.x, this.position.y);
     offscreenBuffer.rotate(rotationPerFrame * frameCount);
     offscreenBuffer.rect(0, 0, this.size, this.size);
     offscreenBuffer.pop();
@@ -85,17 +99,18 @@ class HypnoSquare {
     if (this.position.x < 0 || offscreenBuffer.width < this.position.x) {
       this.velocity = createVector(
         this.velocity.x / abs(this.velocity.x) * -random(this.topSpeed),
-        random(-this.topSpeed, this.topSpeed));
+        random(-this.topSpeed, this.topSpeed)
+      );
       this.position.x = constrain(this.position.x, 0, offscreenBuffer.width);
     }
     if (this.position.y < 0 || offscreenBuffer.height < this.position.y) {
       this.velocity = createVector(
         random(-this.topSpeed, this.topSpeed),
-        this.velocity.y / abs(this.velocity.y) * -random(this.topSpeed));
+        this.velocity.y / abs(this.velocity.y) * -random(this.topSpeed)
+      );
       this.position.y = constrain(this.position.y, 0, offscreenBuffer.height);
     }
   }
-
 }
 
 function windowResized() {

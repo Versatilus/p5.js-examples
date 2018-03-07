@@ -1,0 +1,29 @@
+{
+  "name": "p5.js-examples",
+  "version": "1.0.0",
+  "description": "Various code exsamples using p5.js",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Versatilus/p5.js-examples.git"
+  },
+  "keywords": [
+    "example",
+    "p5"
+  ],
+  "author": "Eric Lewis Paulson",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Versatilus/p5.js-examples/issues"
+  },
+  "homepage": "https://github.com/Versatilus/p5.js-examples#readme",
+  "devDependencies": {
+    "eslint": "^4.18.2",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-prettier": "^2.6.0",
+    "prettier": "^1.11.1"
+  }
+}
