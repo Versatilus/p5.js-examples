@@ -8,9 +8,9 @@
   strokeWeight,
   frameCount,
   background, fill,
-  sqrt, sq, abs
+  sqrt, sq, abs, PI,
   rotate, translate, pop, push,
-  triangle, rect,
+  triangle, rect, ellipse,
   canvas */
 
 /* exported setup, draw, windowResized
@@ -20,19 +20,35 @@ var petals = [];
 const goldenRatio = (1 + Math.sqrt(5)) / 2;
 const goldenAngle = 1 / (goldenRatio * goldenRatio) * 2 * Math.PI;
 const gcr = 1 / (goldenRatio * goldenRatio);
-const bgColor = [0, 0, 0, 1];
-var petalShapes;
-
-var colorScaler = Math.asin(0.5); // Starting hue.
-
-var growthFactor = 15;
-var petalRadius = goldenRatio * growthFactor;
+var petalShapes = [];
+var petalShapeChoices = [];
 var animating = false;
 var animationRate = 300;
-var spiralCount = 2;
-var rotationDirection = 1; // 1 == clockwise, -1 == counterclockwise
-var colorWidth = 7; // Higher is narrower.
+const setDefault = (variable, value) =>
+  variable !== undefined ? variable : value;
+let colorScaler,
+  growthFactor,
+  petalRadius,
+  spiralCount,
+  rotationDirection,
+  colorWidth,
+  backgroundTransparency,
+  lineWeight,
+  petalTransparency;
 
+optionParser();
+
+growthFactor = setDefault(growthFactor, 15);
+petalRadius = setDefault(petalRadius, goldenRatio * growthFactor);
+spiralCount = setDefault(spiralCount, 2);
+rotationDirection = setDefault(rotationDirection, 1); // 1 == clockwise, -1 == counterclockwise
+colorWidth = setDefault(colorWidth, 7); // Higher is narrower.
+colorScaler = setDefault(colorScaler, Math.asin(0.5)); // Starting hue.
+backgroundTransparency = setDefault(backgroundTransparency, 0);
+lineWeight = setDefault(lineWeight, 1);
+petalTransparency = setDefault(petalTransparency, 0);
+
+let bgColor = [0, 0, 0, 1 - backgroundTransparency];
 var animator = (deflt = 0) => (animating ? frameCount / animationRate : deflt);
 var goldenFilter = (breadth, magnitude, spirals) =>
   goldenAngle / (breadth + gcr * magnitude + (gcr * spirals) % 1);
@@ -42,26 +58,34 @@ const canvasSize = () => [windowWidth, windowHeight];
 function setup() {
   pixelDensity(1);
   createCanvas(...canvasSize());
-  noCursor();
+  // noCursor();
   colorMode(HSL, 1, 1, 1, 1);
   ellipseMode(RADIUS);
   angleMode(RADIANS);
   rectMode(CENTER);
-  strokeWeight(1);
+  strokeWeight(lineWeight);
   background(bgColor);
 
-  petalShapes = [
-    // [ellipse, 1, 1],
-    // [equilateral_triangle, 1, PI / 6],
-    // [equilateral_triangle2, 1, PI / 6],
-    // [equilateral_triangle2, 1, 0],
-    // [(equilateral_triangle2, 2, 0)],
-    // [ellipse, 1, 1 / goldenRatio],
-    // [ellipse, 1 / goldenRatio, 1],
-    // [rect, 2, 2],
-    [rect, 2 / goldenRatio, 2],
-    [rect, 2, 2 / goldenRatio]
-  ];
+  if (!Array.isArray(petalShapeChoices) || petalShapeChoices.length === 0) {
+    petalShapes = [[ellipse, 1, 1]];
+  } else {
+    for (let index of petalShapeChoices) {
+      petalShapes.push(
+        [
+          [ellipse, 1, 1],
+          [equilateral_triangle, 1, PI / 6],
+          [equilateral_triangle2, 1, PI / 6],
+          [equilateral_triangle2, 1, 0],
+          [equilateral_triangle2, 2, 0],
+          [ellipse, 1, 1 / goldenRatio],
+          [ellipse, 1 / goldenRatio, 1],
+          [rect, 2, 2],
+          [rect, 2 / goldenRatio, 2],
+          [rect, 2, 2 / goldenRatio]
+        ][index]
+      );
+    }
+  }
   petals = createSpiral(growthFactor, petalRadius);
   updater();
 }
@@ -136,7 +160,7 @@ var colorLuminosity = () => 0.5;
 
 var colorSaturation = () => 1;
 
-var transparency = () => 0.75;
+var transparency = () => 1 - petalTransparency;
 
 // {
 //   x: x,
@@ -184,7 +208,9 @@ Petal.prototype.show = function() {
 
 function createSpiral(gf = growthFactor, radius = petalRadius) {
   var arr = [],
-    as = ~~(sq(sqrt(sq(canvas.width / 2) + sq(canvas.height / 2)) / gf) + 1);
+    as = ~~(
+      sq(sqrt(sq(canvas.width / 2) + sq(canvas.height / 2)) / gf + radius) + 1
+    );
   for (let n = 0; n < as; ++n) {
     var phi = n * goldenAngle,
       r = gf * Math.sqrt(n),
@@ -229,4 +255,45 @@ function windowResized() {
   background(bgColor);
   petals = createSpiral(growthFactor, petalRadius);
   updater();
+}
+
+function optionParser() {
+  let parameters = new URLSearchParams(window.location.search);
+  petalShapeChoices = Array.from(
+    parameters.getAll('shape'),
+    x => (isFinite(x) ? Math.max(Math.min(x, 9), 0) : 0)
+  );
+  for (let setting of parameters.keys()) {
+    let scratch = Number(parameters.get(setting));
+    // console.log(setting + ' ' + scratch);
+    switch (setting) {
+      case 'spirals':
+        spiralCount = ~~scratch;
+        break;
+      case 'distance_apart':
+        growthFactor = Math.max(scratch, 1);
+        break;
+      case 'petal_radius':
+        petalRadius = Math.max(scratch, 1);
+        break;
+      case 'color_start':
+        colorScaler = Math.max(Math.min(scratch, 1), 0);
+        break;
+      case 'color_thinness':
+        colorWidth = ~~scratch;
+        break;
+      case 'magnitude':
+        rotationDirection = scratch;
+        break;
+      case 'line_thickness':
+        lineWeight = Math.max(Math.min(scratch, 5), 0);
+        break;
+      case 'petal_transparency':
+        petalTransparency = Math.max(Math.min(scratch, 1), 0);
+        break;
+      case 'background_transparency':
+        backgroundTransparency = Math.max(Math.min(scratch, 1), 0);
+        break;
+    }
+  }
 }
