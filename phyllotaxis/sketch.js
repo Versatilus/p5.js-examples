@@ -2,7 +2,6 @@
   windowWidth, windowHeight,
   pixelDensity,
   createCanvas, resizeCanvas,
-  noCursor,
   colorMode, ellipseMode, angleMode, rectMode,
   HSL, RADIUS, RADIANS, CENTER,
   strokeWeight,
@@ -14,7 +13,7 @@
   canvas */
 
 /* exported setup, draw, windowResized
-  animator, equilateral_triangle, equilateral_triangle2, cosineColors */
+    animator, equilateral_triangle, equilateral_triangle2, cosineColors */
 
 var petals = [];
 const goldenRatio = (1 + Math.sqrt(5)) / 2;
@@ -58,7 +57,6 @@ const canvasSize = () => [windowWidth, windowHeight];
 function setup() {
   pixelDensity(1);
   createCanvas(...canvasSize());
-  // noCursor();
   colorMode(HSL, 1, 1, 1, 1);
   ellipseMode(RADIUS);
   angleMode(RADIANS);
@@ -134,21 +132,15 @@ var rotator = ({ rotationAngle: phi }) =>
 // var rotator = ({rotationAngle})=>rotationAngle;
 //1 + (gcr * -0.005 + gcr * 1 % 1)
 
-var sineColors = ({ rotationAngle: phi }) =>
-  Math.sin(
-    phi % goldenFilter(colorWidth, rotationDirection * 0.005, spiralCount) +
-      colorScaler
-  );
-
-var colorizer = sineColors;
-
-var cosineColors = ({ rotationAngle: phi }) =>
+var functionColors = (mathFunction = Math.sin) => ({ rotationAngle: phi }) =>
   abs(
-    Math.cos(
+    mathFunction(
       phi % goldenFilter(colorWidth, rotationDirection * 0.005, spiralCount) +
         colorScaler
     )
   );
+
+var colorizer = functionColors(Math.sin);
 
 // var colorLuminosity = ({
 //   rotationAngle: phi
@@ -265,7 +257,6 @@ function optionParser() {
   );
   for (let setting of parameters.keys()) {
     let scratch = Number(parameters.get(setting));
-    // console.log(setting + ' ' + scratch);
     switch (setting) {
       case 'spirals':
         spiralCount = ~~scratch;
@@ -280,7 +271,7 @@ function optionParser() {
         colorScaler = Math.max(Math.min(scratch, 1), 0);
         break;
       case 'color_thinness':
-        colorWidth = ~~scratch;
+        colorWidth = Math.round(scratch);
         break;
       case 'magnitude':
         rotationDirection = scratch;
